@@ -1,7 +1,9 @@
-const app = require("./server");
-const { port } = require("./config");
+import database from "./database";
+import app from "./server";
 
-const server = app.listen(port, function() {
+database.migrate.latest()
+
+const server = app.listen(process.env.PORT || 8080, function () {
   console.log("Webserver is ready");
 });
 
@@ -35,7 +37,7 @@ process.on("SIGTERM", function onSigterm() {
 
 // shut down server
 function shutdown() {
-  server.close(function onServerClosed(err) {
+  server.close(function onServerClosed(err?: Error) {
     if (err) {
       console.error(err);
       process.exit(1);

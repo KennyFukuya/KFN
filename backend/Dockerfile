@@ -21,7 +21,7 @@ RUN npm ci
 
 # check every 30s to ensure this service returns HTTP 200
 HEALTHCHECK --interval=30s \
-  CMD node healthcheck.js
+  CMD node healthcheck.ts
 
 # copy in our source code last, as it changes the most
 COPY . /code
@@ -30,7 +30,7 @@ COPY . /code
 # so that signals are passed properly. Note the code in index.js is needed to catch Docker signals
 # using node here is still more graceful stopping then npm with --init afaik
 # I still can't come up with a good production way to run with npm and graceful shutdown
-CMD [ "node", "src/index.js" ]
+CMD [ "node", "src/index.ts" ]
 
 FROM development as dev-envs
 RUN <<EOF

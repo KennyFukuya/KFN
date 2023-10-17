@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
-import ChatUser from "../ChatUser/ChatUser";
 import { colors } from "../../constants/fonts";
 import UserBadge from "../UserBadge/UserBadge.ts";
 

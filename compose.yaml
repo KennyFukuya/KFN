@@ -11,6 +11,7 @@ services:
       - DATABASE_USER=root
       - DATABASE_PASSWORD=/run/secrets/db-password
       - DATABASE_HOST=db
+      - DATABASE_PORT=3306
       - NODE_ENV=development
     ports:
       - 80:80
@@ -23,6 +24,7 @@ services:
       - ./backend/package.json:/code/package.json
       - ./backend/package-lock.json:/code/package-lock.json
       - back-notused:/opt/app/node_modules
+      - ./backend/src/db/migrations:/code/db/migrations
     networks:
       - public
       - private
@@ -35,6 +37,8 @@ services:
     #image: mysql:8.0.27
     command: '--default-authentication-plugin=mysql_native_password'
     restart: always
+    ports:
+      - 3306:3306
     secrets:
       - db-password
     volumes:

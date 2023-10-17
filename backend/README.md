@@ -35,6 +35,8 @@
  
 ### Getting Started
 
+<!-- npx knex migrate:make create_users_table --knexfile ./Knexfile.ts -->
+
 If this was your Node.js app, to start local development you would:
 
  - Running `docker-compose up` is all you need. It will:

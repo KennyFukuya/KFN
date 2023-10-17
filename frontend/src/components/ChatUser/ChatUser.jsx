@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { colors } from "../../constants/fonts.js";
 import UserBadge from "../UserBadge/UserBadge.ts";

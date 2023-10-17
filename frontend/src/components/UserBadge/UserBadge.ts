@@ -19,14 +19,14 @@ const UserBadge = styled.div<IUserBadge>`
   cursor: pointer;
   position: relative;
 
-  ${(props) =>
+  ${(props: IUserBadge) =>
     props.hasShadow
       ? css`
           box-shadow: 1px 1px 3px #575656;
         `
       : null}
 
-  ${(props) =>
+  ${(props: IUserBadge) =>
     props.isActive
       ? css`
           &:after {
