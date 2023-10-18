@@ -1,30 +1,44 @@
-import React, { useEffect, useState } from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import React from "react";
 import Messenger from "./pages/Messenger";
+// import Login from "./pages/Login";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import styled from "styled-components";
+import colors from "./constants/colors";
+// import colors from "./constants/colors";
 
-// interface MyButtonProps {
-//   /** The text to display inside the button */
-//   title: string;
-//   /** Whether the button can be interacted with */
-//   disabled: boolean;
-// }
+const AppWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px);
+  min-height: 800px;
+  min-width: 1000px;
+  padding: 40px;
+  background: ${colors.dark.secondary};
+  background: linear-gradient(
+    145deg,
+    ${colors.dark.secondary} 40%,
+    ${colors.dark.purple} 0%
+  );
+`;
 
 function App() {
-  const [message, setMessage] = useState();
-  useEffect(() => {
-    fetch("/api/")
-      .then((res) => res.json())
-      .then((res) => setMessage(res.message))
-      .catch(console.error);
-  }, [setMessage]);
+  // const [message, setMessage] = useState();
+  // useEffect(() => {
+  //   fetch("/api/")
+  //     .then((res) => res.json())
+  //     .then((res) => setMessage(res.message))
+  //     .catch(console.error);
+  // }, [setMessage]);
+
   return (
-    <div className="App">
-      {/* <header className="App-header">
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID}>
+      <AppWrapper>
+        {/* <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>{message || "Loading..."}</p>
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          Edit <code>src/App.js</nocode> and save to reload.
         </p>
         <a
           className="App-link"
@@ -36,8 +50,11 @@ function App() {
         </a>
       </header> */}
 
-      <Messenger />
-    </div>
+        {/* <Login /> */}
+
+        <Messenger />
+      </AppWrapper>
+    </GoogleOAuthProvider>
   );
 }
 

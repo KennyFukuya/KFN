@@ -1,4 +1,4 @@
-export const colors = {
+const colors = {
   light: {
     primary: "##F0F2F4",
     white: "#FFF",
@@ -10,5 +10,12 @@ export const colors = {
     secondary: "#CFCFCF",
     purple: "#824DFF",
     black: "#000000",
+    border: "rgb(0 0 0 / 15%)",
+    search: {
+      color: "#757575",
+      background: "#372f48",
+    },
   },
 };
+
+export default colors;

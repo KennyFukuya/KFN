@@ -10,6 +10,9 @@ ENV NODE_ENV $NODE_ENV
 
 WORKDIR /code
 
+ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
+
 # default to port 80 for node, and 9229 and 9230 (tests) for debug
 ARG PORT=80
 ENV PORT $PORT

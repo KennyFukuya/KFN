@@ -14,27 +14,37 @@ import morgan from "morgan";
 
 import database from "./database";
 
+import session from "express-session";
+
+import authRouter from "./routes/auth";
+import passport from "passport";
+
 // Appi
 const app = express();
 
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET as string,
+  })
+);
+
+app.use(passport.authenticate("session"));
+
 app.use(morgan("common"));
 
-app.get("/", function(req, res, next) {
+app.use("/auth", authRouter);
 
-  database.raw('select VERSION() version')
+app.get("/", function (req, res, next) {
+  database
+    .raw("select VERSION() version")
     .then(([rows]) => rows[0])
     .then((row) => res.json({ message: `Hello from MySQL ${row.version}` }))
     .catch(next);
 });
 
-app.get("/healthz", function(req, res) {
-  // do app logic here to determine if app is truly healthy
-  // you should return 200 if healthy, and anything else will fail
-  // if you want, you should be able to restrict this to localhost (include ipv4 and ipv6)
-  res.send("I am happy and healthy\n");
-});
-
-app.get("/login", function(req, res) {
+app.get("/healthz", function (req, res) {
   // do app logic here to determine if app is truly healthy
   // you should return 200 if healthy, and anything else will fail
   // if you want, you should be able to restrict this to localhost (include ipv4 and ipv6)

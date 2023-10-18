@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import { colors } from "../../constants/fonts.js";
 import UserBadge from "../UserBadge/UserBadge.ts";
+import colors from "../../constants/colors.js";
 
 const ChatUserWrapper = styled.div`
   display: flex;

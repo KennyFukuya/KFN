@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import MessengerSideBar from "../components/MessengerSideBar/MessengerSideBar";
 import MessageBox from "../components/MessageBox/MessageBox";
 import styled from "styled-components";
+import colors from "../constants/colors";
 
 const MessengerWrapper = styled.div`
   display: flex;
-  width: 1200px;
+  width: 1000px;
   height: 800px;
+  border: 1px solid ${colors.dark.border};
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px 7px ${colors.dark.border};
 `;
 
 function Messenger() {

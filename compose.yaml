@@ -5,20 +5,21 @@ services:
       - NODE_ENV=development
       context: backend
       target: development
-    command: npm run start-watch
+    command: /wait-for-it.sh db:3306 -- npm run start-watch
     environment:
-      - DATABASE_DB=example
-      - DATABASE_USER=root
-      - DATABASE_PASSWORD=/run/secrets/db-password
-      - DATABASE_HOST=db
-      - DATABASE_PORT=3306
-      - NODE_ENV=development
+      - DATABASE_DB
+      - DATABASE_USER
+      - DATABASE_PASSWORD
+      - DATABASE_HOST
+      - DATABASE_PORT
+      - NODE_ENV
+      - SESSION_SECRET
+      - CLIENT_ID
+      - CLIENT_SECRET
     ports:
       - 80:80
       - 9229:9229
       - 9230:9230
-    secrets:
-      - db-password
     volumes:
       - ./backend/src:/code/src:ro
       - ./backend/package.json:/code/package.json
@@ -39,21 +40,21 @@ services:
     restart: always
     ports:
       - 3306:3306
-    secrets:
-      - db-password
     volumes:
       - db-data:/var/lib/mysql
     networks:
       - private
     environment:
-      - MYSQL_DATABASE=example
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+      - MYSQL_DATABASE
+      - MYSQL_ROOT_PASSWORD
   frontend:
     build:
       context: frontend
       target: development
     ports:
       - 3000:3000
+    environment:
+      - REACT_APP_CLIENT_ID
     volumes:
       - ./frontend/src:/code/src
       - /code/node_modules
@@ -67,6 +68,3 @@ networks:
 volumes:
   back-notused:
   db-data:
-secrets:
-  db-password:
-    file: db/password.txt

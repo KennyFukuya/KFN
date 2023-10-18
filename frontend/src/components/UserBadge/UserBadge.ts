@@ -1,5 +1,5 @@
 import styled, { css } from "styled-components";
-import { colors } from "../../constants/fonts.js";
+import colors from "../../constants/colors";
 
 interface IUserBadge {
   isActive?: boolean;

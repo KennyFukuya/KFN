@@ -1,13 +1,13 @@
 import React from "react";
 import styled from "styled-components";
-import { colors } from "../../constants/fonts";
 import UserBadge from "../UserBadge/UserBadge.ts";
+import colors from "../../constants/colors.js";
 
 // https://marella.me/material-icons/demo/
 // https://dribbble.com/shots/3144274-Chat-module-UI-Challenge-Week-06/attachments/666341
 
 const MessageBoxWrapper = styled.div`
-  width: 100%;
+  flex-basis: 70%;
   display: flex;
   flex-direction: column;
 `;
@@ -20,6 +20,7 @@ const ActiveConversationHeaderSection = styled.section`
   align-items: center;
   gap: 20px;
   padding: 0 40px;
+  border-radius: 0 4px 0 0;
 `;
 
 const ActiveConversationContentSection = styled.section`
@@ -40,6 +41,7 @@ const ActiveConversationInputSection = styled.section`
   align-items: center;
   gap: 20px;
   padding: 0 40px;
+  border-radius: 0 0 4px 0;
 `;
 
 const UserName = styled.span`
