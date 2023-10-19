@@ -1,109 +1,35 @@
 import express from "express";
-import oauth from "passport-google-oauth";
-import passport from "passport";
-import database from "../database";
-
-const GoogleStrategy = oauth.OAuth2Strategy;
+import { OAuth2Client, UserRefreshClient } from "google-auth-library";
+// import database from "../database";
 
 const router = express.Router();
 
-const clientID = process.env.CLIENT_ID as string;
+const clientId = process.env.CLIENT_ID as string;
 
 const clientSecret = process.env.CLIENT_SECRET as string;
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID,
-      clientSecret,
-      callbackURL: "/oauth2/redirect/google",
-    },
-    function verify(issuer, profile, cb) {
-      //   database.get(
-      //     "SELECT * FROM federated_credentials WHERE provider = ? AND subject = ?",
-      //     [issuer, profile.id],
-      //     function (err, row) {
-      //       if (err) {
-      //         return cb(err);
-      //       }
-      //       if (!row) {
-      //         database.run(
-      //           "INSERT INTO users (name) VALUES (?)",
-      //           [profile.displayName],
-      //           function (err) {
-      //             if (err) {
-      //               return cb(err);
-      //             }
-      //             var id = this.lastID;
-      //             database.run(
-      //               "INSERT INTO federated_credentials (user_id, provider, subject) VALUES (?, ?, ?)",
-      //               [id, issuer, profile.id],
-      //               function (err) {
-      //                 if (err) {
-      //                   return cb(err);
-      //                 }
-      //                 var user = {
-      //                   id: id,
-      //                   name: profile.displayName,
-      //                 };
-      //                 return cb(null, user);
-      //               }
-      //             );
-      //           }
-      //         );
-      //       } else {
-      //         database.get(
-      //           "SELECT * FROM users WHERE id = ?",
-      //           [row.user_id],
-      //           function (err, row) {
-      //             if (err) {
-      //               return cb(err);
-      //             }
-      //             if (!row) {
-      //               return cb(null, false);
-      //             }
-      //             return cb(null, row);
-      //           }
-      //         );
-      //       }
-      //     }
-      //   );
-    }
-  )
+const oAuth2Client = new OAuth2Client(
+  process.env.CLIENT_ID,
+  process.env.CLIENT_SECRET,
+  "postmessage"
 );
 
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+router.post("/google", async (req, res) => {
+  const { tokens } = await oAuth2Client.getToken(req.body.code);
+  console.log(tokens);
 
-router.get(
-  "/oauth2/redirect/google",
-  passport.authenticate("google", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-  })
-);
-
-router.post("/logout", function (req, res, next) {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-    res.redirect("/");
-  });
+  res.json(tokens);
 });
 
-// passport.serializeUser(function (user, cb) {
-//   process.nextTick(function () {
-//     cb(null, { id: user.id, username: user.username, name: user.name });
-//   });
-// });
+router.post("/google/refresh-token", async (req, res) => {
+  const user = new UserRefreshClient(
+    clientId,
+    clientSecret,
+    req.body.refreshToken
+  );
+  const { credentials } = await user.refreshAccessToken();
 
-// passport.deserializeUser(function (user, cb) {
-//   process.nextTick(function () {
-//     return cb(null, user);
-//   });
-// });
+  res.json(credentials);
+});
 
 export default router;

@@ -1,10 +1,13 @@
 import React from "react";
-import Messenger from "./pages/Messenger";
-// import Login from "./pages/Login";
+// import Messenger from "./pages/Messenger";
+import Login from "./pages/Login";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import styled from "styled-components";
 import colors from "./constants/colors";
 // import colors from "./constants/colors";
+import { QueryClient, QueryClientProvider } from "react-query";
+
+const queryClient = new QueryClient();
 
 const AppWrapper = styled.div`
   display: flex;
@@ -32,9 +35,10 @@ function App() {
   // }, [setMessage]);
 
   return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID}>
-      <AppWrapper>
-        {/* <header className="App-header">
+    <QueryClientProvider client={queryClient}>
+      <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID as string}>
+        <AppWrapper>
+          {/* <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>{message || "Loading..."}</p>
         <p>
@@ -50,11 +54,12 @@ function App() {
         </a>
       </header> */}
 
-        {/* <Login /> */}
+          <Login />
 
-        <Messenger />
-      </AppWrapper>
-    </GoogleOAuthProvider>
+          {/* <Messenger /> */}
+        </AppWrapper>
+      </GoogleOAuthProvider>
+    </QueryClientProvider>
   );
 }
 

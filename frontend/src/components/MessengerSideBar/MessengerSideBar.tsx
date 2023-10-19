@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { debounce } from 'lodash';
+import { debounce } from "lodash";
 import styled from "styled-components";
 import ChatUser from "../ChatUser/ChatUser";
 import colors from "../../constants/colors";
@@ -43,17 +43,24 @@ const SearchInput = styled.input`
 `;
 
 function MessengerSideBar() {
-  const [searchValue, setSearchValue] = useState("")
+  const [searchValue, setSearchValue] = useState("");
 
-  const debouncedSearch = debounce((searchTerm) => {
-    setSearchValue(searchTerm)
-  }, 300);
+  const debouncedSearch = debounce(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchValue(event.target.value);
+    },
+    300
+  );
 
   return (
     <SideBarWrapper>
       <SearchWrapper>
-        <span class="material-icons">search</span>
-        <SearchInput placeholder="Search People" value={searchValue} onChange={debouncedSearch}/>
+        <span className="material-icons">search</span>
+        <SearchInput
+          placeholder="Search People"
+          value={searchValue}
+          onChange={debouncedSearch}
+        />
       </SearchWrapper>
 
       <section>

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import UserBadge from "../UserBadge/UserBadge.ts";
-import colors from "../../constants/colors.js";
+import UserBadge from "../UserBadge/UserBadge";
+import colors from "../../constants/colors";
 
 // https://marella.me/material-icons/demo/
 // https://dribbble.com/shots/3144274-Chat-module-UI-Challenge-Week-06/attachments/666341
@@ -77,7 +77,7 @@ function MessageBox() {
       <ActiveConversationContentSection></ActiveConversationContentSection>
       <ActiveConversationInputSection>
         <MessageInput placeholder="Send a message" />
-        <span class="material-icons">send</span>
+        <span className="material-icons">send</span>
       </ActiveConversationInputSection>
     </MessageBoxWrapper>
   );

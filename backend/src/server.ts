@@ -12,27 +12,20 @@ import morgan from "morgan";
 // which is a best practice in Docker. Friends don't let friends code their apps to
 // do app logging to files in containers.
 
+import bodyParser from 'body-parser';
+
 import database from "./database";
 
-import session from "express-session";
-
 import authRouter from "./routes/auth";
-import passport from "passport";
 
 // Appi
 const app = express();
 
-app.use(
-  session({
-    resave: false,
-    saveUninitialized: true,
-    secret: process.env.SESSION_SECRET as string,
-  })
-);
-
-app.use(passport.authenticate("session"));
-
 app.use(morgan("common"));
+
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(bodyParser.json());
 
 app.use("/auth", authRouter);
 

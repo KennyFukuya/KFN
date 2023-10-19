@@ -1,6 +1,6 @@
 const colors = {
   light: {
-    primary: "##F0F2F4",
+    primary: "#F0F2F4",
     white: "#FFF",
     green: "#00FF7e",
     gray: "#E8E8E8",
@@ -16,6 +16,7 @@ const colors = {
       background: "#372f48",
     },
   },
+  google: "#da4c41",
 };
 
 export default colors;

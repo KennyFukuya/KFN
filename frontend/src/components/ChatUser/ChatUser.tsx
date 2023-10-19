@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import UserBadge from "../UserBadge/UserBadge.ts";
-import colors from "../../constants/colors.js";
+import UserBadge from "../UserBadge/UserBadge";
+import colors from "../../constants/colors";
 
 const ChatUserWrapper = styled.div`
   display: flex;
@@ -24,8 +24,8 @@ const UserName = styled.span`
 const UserRecentMessage = styled.span`
   color: ${colors.light.gray};
   font-size: 14px;
-  font-weight: ${props => props.isNew ? 400 : 300};
 `;
+// font-weight: ${props => props.isNew ? 400 : 300};
 
 function ChatUser() {
   // const [message, setMessage] = useState();
