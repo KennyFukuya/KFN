@@ -11,9 +11,6 @@ COPY package-lock.json /code/package-lock.json
 RUN npm ci
 COPY . /code
 
-ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
-
 CMD [ "npm", "start" ]
 
 FROM development AS builder

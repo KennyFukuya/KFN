@@ -39,7 +39,7 @@ const Input = styled.input`
 
 export type TInputType = "password" | "email";
 
-export interface ILoginInput {
+export interface LoginInput {
   inputType: HTMLInputTypeAttribute;
   inputLabel: string;
   inputName: string;
@@ -51,7 +51,7 @@ export interface ILoginInput {
   formId: string;
 }
 
-function LoginInput(props: ILoginInput) {
+function LoginInput(props: LoginInput) {
   const id = useId();
 
   const {

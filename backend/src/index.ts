@@ -1,13 +1,75 @@
+import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
 import database from "./database";
 import app from "./server";
+import redis from "./redis";
 
-database.migrate.latest()
+database.migrate.latest();
 
 const server = app.listen(process.env.PORT || 8080, function () {
   console.log("Webserver is ready");
 });
 
-//
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+const io = new Server(server, { cors: { origin: "*" } });
+
+io.use((socket, next) => {
+  const authToken = socket.handshake.auth.token;
+
+  if (authToken) {
+    return next();
+  }
+
+  return next(new Error("Unauthorized"));
+});
+
+io.on("connection", async (socket) => {
+  const token = socket.handshake.auth.token.split(" ")[1];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: any = jwt.decode(token);
+
+  console.log("A user connected");
+
+  const online = parseInt((await redis.get("online")) || "0");
+
+  await redis.set("online", online + 1);
+
+  io.emit("message", {
+    message: `Has joined`,
+    timestamp: Date.now(),
+    email: data.email,
+    name: data.name,
+  });
+
+  socket.on("disconnect", async () => {
+    console.log("A user has disconnected");
+
+    const online = parseInt((await redis.get("online")) || "0");
+
+    await redis.set("online", online - 1);
+
+    io.emit("message", {
+      message: `Has left`,
+      timestamp: Date.now(),
+      email: data.email,
+      name: data.name,
+    });
+  });
+
+  socket.on("message", (data) => {
+    console.log("Received message:", data);
+
+    io.emit("message", data);
+  });
+});
+
 // need this in docker container to properly exit since node doesn't handle SIGINT/SIGTERM
 // this also won't work on using npm start since:
 // https://github.com/npm/npm/issues/4603

@@ -5,7 +5,7 @@ services:
         - NODE_ENV=development
       context: backend
       target: development
-    command: /wait-for-it.sh db:3306 -- npm run start-watch
+    command: npm run start-watch
     environment:
       - DATABASE_DB
       - DATABASE_USER
@@ -16,6 +16,8 @@ services:
       - SESSION_SECRET
       - CLIENT_ID
       - CLIENT_SECRET
+      - REDIS_PORT
+      - REDIS_HOST
     ports:
       - 80:80
       - 9229:9229
@@ -31,6 +33,26 @@ services:
       - private
     depends_on:
       - db
+      - redis
+  redis-overcommit:
+    build: https://github.com/bkuhl/redis-overcommit-on-host.git
+    restart: no
+    privileged: true
+    volumes:
+      - /proc/sys/vm:/mnt/vm
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/var/lib/redis
+    networks:
+      - private
+    environment:
+      - REDIS_PORT
+    depends_on:
+      - redis-overcommit
   db:
     # We use a mariadb image which supports both amd64 & arm64 architecture
     image: mariadb:10.6.4-focal
@@ -62,10 +84,12 @@ services:
       - public
     depends_on:
       - backend
-    command: /wait-for-it.sh backend:80 -- npm run start
+    command: npm run start
 networks:
   public:
   private:
+    external: false
 volumes:
   back-notused:
   db-data:
+  redis-data:

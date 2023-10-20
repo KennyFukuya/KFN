@@ -1,13 +1,15 @@
-import React from "react";
+import React, { KeyboardEvent, useEffect, useState } from "react";
 import styled from "styled-components";
-import UserBadge from "../UserBadge/UserBadge";
 import colors from "../../constants/colors";
-
-// https://marella.me/material-icons/demo/
-// https://dribbble.com/shots/3144274-Chat-module-UI-Challenge-Week-06/attachments/666341
+import { useMutation } from "react-query";
+import api from "../../api/api";
+import { useNavigate } from "react-router-dom";
+import useUserData from "../../hooks/useUserData";
+import { connectSocket, disconnectSocket, getSocket } from "../../api/socket";
+import useOnline from "../../hooks/useOnline";
 
 const MessageBoxWrapper = styled.div`
-  flex-basis: 70%;
+  flex-basis: 100%;
   display: flex;
   flex-direction: column;
 `;
@@ -20,17 +22,23 @@ const ActiveConversationHeaderSection = styled.section`
   align-items: center;
   gap: 20px;
   padding: 0 40px;
-  border-radius: 0 4px 0 0;
+  border-radius: 4px 4px 0 0;
+  justify-content: space-between;
+
+  > first-child {
+    font-size: 14px;
+  }
 `;
 
 const ActiveConversationContentSection = styled.section`
   background-color: ${colors.light.gray};
   font-weight: 400;
-  min-height: 640px;
+  height: 540px;
   display: flex;
-  align-items: center;
+  flex-direction: column-reverse;
   gap: 20px;
-  padding: 0 40px;
+  padding: 20px 40px 20px 40px;
+  overflow-y: auto;
 `;
 
 const ActiveConversationInputSection = styled.section`
@@ -41,13 +49,11 @@ const ActiveConversationInputSection = styled.section`
   align-items: center;
   gap: 20px;
   padding: 0 40px;
-  border-radius: 0 0 4px 0;
-`;
+  border-radius: 0 0 4px 4px;
 
-const UserName = styled.span`
-  color: ${colors.dark.black};
-  font-size: 20px;
-  font-weight: 500;
+  > span {
+    cursor: pointer;
+  }
 `;
 
 const MessageInput = styled.input`
@@ -56,28 +62,154 @@ const MessageInput = styled.input`
   border: none;
 `;
 
-function MessageBox() {
-  // const [message, setMessage] = useState();
+const LogoutButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
 
-  // useEffect(() => {
-  //   fetch("/api/")
-  //     .then(res => res.json())
-  //     .then(res => setMessage(res.message))
-  //     .catch(console.error);
-  // }, [setMessage]);
+  > span {
+    color: ${colors.dark.primary};
+  }
+`;
+
+const MessageWrapper = styled.div<{ self: boolean }>`
+  padding: 10px;
+  background: ${(props) =>
+    props.self ? colors.dark.primary : colors.dark.purple};
+  color: ${(props) =>
+    props.self ? colors.light.primary : colors.light.primary};
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  border-radius: 4px;
+  place-self: ${(props) => (props.self ? "end" : "start")};
+
+  > span {
+    word-wrap: break-word;
+  }
+
+  > :last-child {
+    font-size: 12px;
+    place-self: end;
+    margin-top: 10px;
+  }
+`;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const logoutConnection = async () => await api.post("/auth/google/logout");
+
+interface Message {
+  message: string;
+  timestamp: number;
+  name: string;
+  email: string;
+}
+
+function MessageBox() {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const userData = useUserData();
+  const { data: onlineCount } = useOnline();
+
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    connectSocket();
+
+    const socket = getSocket();
+
+    socket.on("connect", () => {
+      console.log("connected");
+    });
+
+    socket.on("message", (data) => {
+      setMessages((prevMessages) => [data, ...prevMessages]);
+    });
+
+    return disconnectSocket;
+  }, []);
+
+  const { mutate } = useMutation(logoutConnection, {
+    onSuccess: () => {
+      localStorage.removeItem("oauth");
+      localStorage.removeItem("accessToken");
+
+      navigate("/");
+    },
+    onError: (err) => {
+      localStorage.removeItem("oauth");
+      localStorage.removeItem("accessToken");
+
+      navigate("/");
+
+      console.error(err);
+    },
+  });
+
+  const handleLogout = () => {
+    mutate();
+  };
+
+  const sendMessage = () => {
+    const socket = getSocket();
+
+    socket.emit("message", {
+      message,
+      name: userData.name,
+      email: userData.email,
+      timestamp: Date.now(),
+    });
+
+    setMessage("");
+  };
+
+  const onMessageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(event.target.value);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+  };
+
+  const renderMessages = () => {
+    return messages.map((m) => {
+      const date = new Date(m.timestamp);
+      const dateString = date.toLocaleString();
+
+      return (
+        <MessageWrapper self={m.email === userData.email}>
+          <span>{m.message}</span>
+          <span>
+            {m.name} - {dateString}
+          </span>
+        </MessageWrapper>
+      );
+    });
+  };
 
   return (
     <MessageBoxWrapper>
       <ActiveConversationHeaderSection>
-        <UserBadge isActive={true} hasShadow={true}>
-          KF
-        </UserBadge>
-        <UserName>Kenny Fukuya</UserName>
+        <span>Users {onlineCount}/100</span>
+        <LogoutButton onClick={handleLogout}>
+          <span className="material-icons">logout</span>
+        </LogoutButton>
       </ActiveConversationHeaderSection>
-      <ActiveConversationContentSection></ActiveConversationContentSection>
+      <ActiveConversationContentSection>
+        {renderMessages()}
+      </ActiveConversationContentSection>
       <ActiveConversationInputSection>
-        <MessageInput placeholder="Send a message" />
-        <span className="material-icons">send</span>
+        <MessageInput
+          placeholder="Send a message"
+          onChange={onMessageChange}
+          onKeyDown={handleKeyDown}
+          value={message}
+        />
+        <span className="material-icons" onClick={sendMessage}>
+          send
+        </span>
       </ActiveConversationInputSection>
     </MessageBoxWrapper>
   );

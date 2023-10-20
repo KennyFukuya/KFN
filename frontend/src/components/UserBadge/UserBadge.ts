@@ -1,12 +1,12 @@
 import styled, { css } from "styled-components";
 import colors from "../../constants/colors";
 
-interface IUserBadge {
+interface UserBadge {
   isActive?: boolean;
   hasShadow?: boolean;
 }
 
-const UserBadge = styled.div<IUserBadge>`
+const UserBadge = styled.div<UserBadge>`
   width: 50px;
   height: 50px;
   border-radius: 100%;
@@ -19,14 +19,14 @@ const UserBadge = styled.div<IUserBadge>`
   cursor: pointer;
   position: relative;
 
-  ${(props: IUserBadge) =>
+  ${(props: UserBadge) =>
     props.hasShadow
       ? css`
           box-shadow: 1px 1px 3px #575656;
         `
       : null}
 
-  ${(props: IUserBadge) =>
+  ${(props: UserBadge) =>
     props.isActive
       ? css`
           &:after {

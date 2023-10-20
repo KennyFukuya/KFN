@@ -1,11 +1,12 @@
 import React from "react";
-// import Messenger from "./pages/Messenger";
-import Login from "./pages/Login";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import Messenger from "./pages/Messenger";
+import Login from "./pages/Login";
 import styled from "styled-components";
 import colors from "./constants/colors";
-// import colors from "./constants/colors";
-import { QueryClient, QueryClientProvider } from "react-query";
+import AuthChecker from "./components/AuthChecker/AuthChecker";
 
 const queryClient = new QueryClient();
 
@@ -26,37 +27,30 @@ const AppWrapper = styled.div`
 `;
 
 function App() {
-  // const [message, setMessage] = useState();
-  // useEffect(() => {
-  //   fetch("/api/")
-  //     .then((res) => res.json())
-  //     .then((res) => setMessage(res.message))
-  //     .catch(console.error);
-  // }, [setMessage]);
-
   return (
     <QueryClientProvider client={queryClient}>
       <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID as string}>
         <AppWrapper>
-          {/* <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>{message || "Loading..."}</p>
-        <p>
-          Edit <code>src/App.js</nocode> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header> */}
-
-          <Login />
-
-          {/* <Messenger /> */}
+          <Router>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <AuthChecker redirect="/messenger">
+                    <Login />
+                  </AuthChecker>
+                }
+              />
+              <Route
+                path="/messenger"
+                element={
+                  <AuthChecker>
+                    <Messenger />
+                  </AuthChecker>
+                }
+              />
+            </Routes>
+          </Router>
         </AppWrapper>
       </GoogleOAuthProvider>
     </QueryClientProvider>

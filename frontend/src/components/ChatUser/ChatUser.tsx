@@ -16,33 +16,32 @@ const UserTextWrapper = styled.div`
 `;
 
 const UserName = styled.span`
-  color: ${colors.light.gray};
-  font-size: 20px;
+  color: ${colors.dark.secondary};
+  font-size: 18px;
   font-weight: 500;
 `;
 
 const UserRecentMessage = styled.span`
-  color: ${colors.light.gray};
+  color: ${colors.dark.secondary};
   font-size: 14px;
 `;
-// font-weight: ${props => props.isNew ? 400 : 300};
 
-function ChatUser() {
-  // const [message, setMessage] = useState();
+interface ChatUser {
+  givenName: string;
+  familyName: string;
+  email: string;
+  isActive: boolean;
+}
 
-  // useEffect(() => {
-  //   fetch("/api/")
-  //     .then(res => res.json())
-  //     .then(res => setMessage(res.message))
-  //     .catch(console.error);
-  // }, [setMessage]);
+function ChatUser({ givenName, familyName, email, isActive }: ChatUser) {
+  const badgeLabel = givenName[0] + familyName[0];
 
   return (
     <ChatUserWrapper>
-      <UserBadge isActive={true}>KF</UserBadge>
+      <UserBadge isActive={isActive}>{badgeLabel}</UserBadge>
       <UserTextWrapper>
-        <UserName>Kenny Fukuya</UserName>
-        <UserRecentMessage>Teste</UserRecentMessage>
+        <UserName>{`${givenName} ${familyName}`}</UserName>
+        <UserRecentMessage>{email}</UserRecentMessage>
       </UserTextWrapper>
     </ChatUserWrapper>
   );
