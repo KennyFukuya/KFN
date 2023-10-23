@@ -6,6 +6,7 @@ import colors from "../constants/colors";
 import LoginInput from "../components/LoginInput/LoginInput";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
+import axios, { AxiosError } from "axios";
 
 const LoginWrapper = styled.div`
   display: flex;
@@ -18,6 +19,12 @@ const LoginWrapper = styled.div`
   border-radius: 5px;
   box-shadow: 0px 0px 10px 7px ${colors.dark.border};
   background-color: ${colors.dark.primary};
+  color: ${colors.dark.secondary};
+
+  > a {
+    color: ${colors.dark.secondary};
+    text-decoration: none;
+  }
 
   > form {
     width: 100%;
@@ -131,10 +138,33 @@ function Login() {
     setPassword(e.target.value);
   };
 
-  const handleSubmit = (event: React.ChangeEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.ChangeEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    console.log("TODO");
+    try {
+      const { data } = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      localStorage.setItem("accessToken", data.token);
+
+      alert("Welcome");
+      navigate("/messenger");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status === 404) {
+          alert("User not found");
+        } else if (axiosError.response?.status === 401) {
+          alert("Incorrect password");
+        } else {
+          alert("An error has occurred");
+        }
+      } else {
+        alert("An error has occurred");
+      }
+    }
   };
 
   return (
@@ -238,6 +268,8 @@ function Login() {
           </svg>
         </GoogleLogin>
       </ExternalSourcesWrapper>
+
+      <a href="/signup">Sing up</a>
     </LoginWrapper>
   );
 }

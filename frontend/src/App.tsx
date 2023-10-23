@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import styled from "styled-components";
 import colors from "./constants/colors";
 import AuthChecker from "./components/AuthChecker/AuthChecker";
+import Signup from "./pages/Signup";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ function App() {
                   </AuthChecker>
                 }
               />
+              <Route path="/signup" element={<Signup />} />
             </Routes>
           </Router>
         </AppWrapper>

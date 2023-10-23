@@ -9,10 +9,17 @@ interface AuthCheckerProps {
   redirect?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const validateToken = async (tokens: any) => {
+const validateOAuth = async (refreshToken: string) => {
   const { data } = await api.post("/auth/google/refresh-token", {
-    refreshToken: tokens.refresh_token,
+    refreshToken,
+  });
+
+  return data;
+};
+
+const validateInternalJWT = async (token: string) => {
+  const { data } = await api.post("/auth/validate", {
+    token,
   });
 
   return data;
@@ -22,8 +29,9 @@ const AuthChecker: React.FC<AuthCheckerProps> = ({ children, redirect }) => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const navigate = useNavigate();
   const oauth = localStorage.getItem("oauth");
+  const accessToken = localStorage.getItem("accessToken");
 
-  const { mutate } = useMutation(validateToken, {
+  const { mutate: validateOAuthMutation } = useMutation(validateOAuth, {
     onSuccess: (data) => {
       localStorage.setItem("oauth", JSON.stringify(data));
       localStorage.setItem("accessToken", data.id_token);
@@ -39,23 +47,44 @@ const AuthChecker: React.FC<AuthCheckerProps> = ({ children, redirect }) => {
     },
   });
 
+  const { mutate: validateInternalTokenMutation } = useMutation(
+    validateInternalJWT,
+    {
+      onSuccess: () => {
+        setIsAuthorized(true);
+      },
+      onError: () => {
+        setIsAuthorized(false);
+        localStorage.removeItem("accessToken");
+        alert("Please login again");
+        navigate("/");
+      },
+    }
+  );
+
   useEffect(() => {
-    if (!oauth) {
+    if (!oauth && !accessToken) {
       setIsAuthorized(false);
 
       return;
     }
 
-    const tokens = JSON.parse(oauth);
-    const { expiry_date: expirationDate } = tokens;
-    const now = Date.now();
+    if (oauth) {
+      const tokens = JSON.parse(oauth);
+      const { expiry_date: expirationDate } = tokens;
+      const now = Date.now();
 
-    if (expirationDate - now < 60000) {
-      mutate(tokens);
-    } else {
-      setIsAuthorized(true);
+      if (expirationDate - now < 60000) {
+        validateOAuthMutation(tokens.refresh_token);
+      } else {
+        setIsAuthorized(true);
+      }
     }
-  }, [oauth]);
+
+    if (accessToken) {
+      validateInternalTokenMutation(accessToken);
+    }
+  }, [oauth, accessToken]);
 
   useEffect(() => {
     if (redirect && isAuthorized) {

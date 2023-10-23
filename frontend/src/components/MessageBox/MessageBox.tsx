@@ -1,5 +1,6 @@
 import React, { KeyboardEvent, useEffect, useState } from "react";
 import styled from "styled-components";
+import { useDropzone } from "react-dropzone";
 import colors from "../../constants/colors";
 import { useMutation } from "react-query";
 import api from "../../api/api";
@@ -39,6 +40,14 @@ const ActiveConversationContentSection = styled.section`
   gap: 20px;
   padding: 20px 40px 20px 40px;
   overflow-y: auto;
+
+  &.active {
+    border-width: 8px;
+    border-color: ${colors.light.green};
+    border-style: dashed;
+    outline: none;
+    transition: border-width 0.2s ease-in-out;
+  }
 `;
 
 const ActiveConversationInputSection = styled.section`
@@ -88,6 +97,11 @@ const MessageWrapper = styled.div<{ self: boolean }>`
     word-wrap: break-word;
   }
 
+  > img {
+    max-width: 300px;
+    max-height: 300px;
+  }
+
   > :last-child {
     font-size: 12px;
     place-self: end;
@@ -96,13 +110,14 @@ const MessageWrapper = styled.div<{ self: boolean }>`
 `;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const logoutConnection = async () => await api.post("/auth/google/logout");
+const logoutConnection = async () => await api.post("/auth/logout");
 
 interface Message {
   message: string;
   timestamp: number;
   name: string;
   email: string;
+  type: string;
 }
 
 function MessageBox() {
@@ -147,7 +162,9 @@ function MessageBox() {
   });
 
   const handleLogout = () => {
-    mutate();
+    if (confirm("Are you want to log out?")) {
+      mutate();
+    }
   };
 
   const sendMessage = () => {
@@ -155,9 +172,10 @@ function MessageBox() {
 
     socket.emit("message", {
       message,
-      name: userData.name,
+      name: `${userData.given_name} ${userData.family_name}`,
       email: userData.email,
       timestamp: Date.now(),
+      type: "text",
     });
 
     setMessage("");
@@ -178,6 +196,17 @@ function MessageBox() {
       const date = new Date(m.timestamp);
       const dateString = date.toLocaleString();
 
+      if (m.type == "file") {
+        return (
+          <MessageWrapper self={m.email === userData.email}>
+            <img src={m.message} draggable={false} />
+            <span>
+              {m.name} - {dateString}
+            </span>
+          </MessageWrapper>
+        );
+      }
+
       return (
         <MessageWrapper self={m.email === userData.email}>
           <span>{m.message}</span>
@@ -189,6 +218,49 @@ function MessageBox() {
     });
   };
 
+  const uploadFile = (file: File) => {
+    const socket = getSocket();
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const fileData = reader.result;
+
+      socket.emit("message", {
+        message: fileData,
+        name: `${userData.given_name} ${userData.family_name}`,
+        email: userData.email,
+        timestamp: Date.now(),
+        type: "file",
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const onDrop = (acceptedFiles: File[]) => {
+    if (!acceptedFiles.length) {
+      alert(
+        "Files not supported. Only supports .jpeg and .png under 1M (max of 5 at a time)."
+      );
+    } else {
+      acceptedFiles.forEach((file) => uploadFile(file));
+    }
+  };
+
+  const onClickDrag = (event: React.MouseEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    maxFiles: 5,
+    accept: {
+      "image/jpeg": [],
+      "image/png": [],
+    },
+    maxSize: 1000000, // 1MB
+  });
+
   return (
     <MessageBoxWrapper>
       <ActiveConversationHeaderSection>
@@ -197,7 +269,13 @@ function MessageBox() {
           <span className="material-icons">logout</span>
         </LogoutButton>
       </ActiveConversationHeaderSection>
-      <ActiveConversationContentSection>
+      <ActiveConversationContentSection
+        {...getRootProps({
+          onClick: onClickDrag,
+          className: isDragActive ? "active" : "",
+        })}
+      >
+        <input {...getInputProps()} />
         {renderMessages()}
       </ActiveConversationContentSection>
       <ActiveConversationInputSection>

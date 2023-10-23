@@ -4,12 +4,15 @@ import jwtDecode from "jwt-decode";
 function useUserData() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [userData, setUserData] = useState<any>();
-  const oauth = localStorage.getItem("oauth");
+  const accessToken = localStorage.getItem("accessToken");
 
   useEffect(() => {
     try {
-      const token = JSON.parse(oauth!);
-      const decodedToken = jwtDecode(token.id_token);
+      if (!accessToken) {
+        return;
+      }
+
+      const decodedToken = jwtDecode(accessToken!);
 
       if (decodedToken) {
         setUserData(decodedToken);
@@ -17,7 +20,7 @@ function useUserData() {
     } catch (error) {
       console.error("Error decoding JWT:", error);
     }
-  }, [oauth]);
+  }, [accessToken]);
 
   return userData;
 }

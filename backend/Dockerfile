@@ -26,6 +26,9 @@ HEALTHCHECK --interval=30s \
 # copy in our source code last, as it changes the most
 COPY . /code
 
+RUN curl -L https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh -o ./wait-for-it.sh
+RUN chmod +x ./wait-for-it.sh
+
 # if you want to use npm start instead, then use `docker run --init in production`
 # so that signals are passed properly. Note the code in index.js is needed to catch Docker signals
 # using node here is still more graceful stopping then npm with --init afaik

@@ -1,8 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import database from "./database";
 import app from "./server";
 import redis from "./redis";
+import {
+  isInternalTokenExpired,
+  isTokenExpired,
+} from "./middlewares/requireAuth";
 
 database.migrate.latest();
 
@@ -19,14 +24,35 @@ app.use((req, res, next) => {
 
 const io = new Server(server, { cors: { origin: "*" } });
 
-io.use((socket, next) => {
+io.use(async (socket, next) => {
   const authToken = socket.handshake.auth.token;
 
-  if (authToken) {
-    return next();
+  if (!authToken || !authToken.startsWith("Bearer ")) {
+    return next(new Error("Unauthorized"));
   }
 
-  return next(new Error("Unauthorized"));
+  const token = authToken.split(" ")[1];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: any = jwt.decode(token);
+
+  if (data && data.source === "internal") {
+    const hasTokenExpired = await isInternalTokenExpired(token);
+
+    if (hasTokenExpired) {
+      return next(new Error("Unauthorized"));
+    }
+
+    return next();
+  } else {
+    const isExpired = await isTokenExpired(token);
+
+    if (isExpired) {
+      return next(new Error("Unauthorized"));
+    }
+
+    return next();
+  }
 });
 
 io.on("connection", async (socket) => {
@@ -45,7 +71,8 @@ io.on("connection", async (socket) => {
     message: `Has joined`,
     timestamp: Date.now(),
     email: data.email,
-    name: data.name,
+    name: `${data.given_name} ${data.family_name}`,
+    type: "text",
   });
 
   socket.on("disconnect", async () => {
@@ -59,7 +86,8 @@ io.on("connection", async (socket) => {
       message: `Has left`,
       timestamp: Date.now(),
       email: data.email,
-      name: data.name,
+      name: `${data.given_name} ${data.family_name}`,
+      type: "text",
     });
   });
 
